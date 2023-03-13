@@ -4,13 +4,33 @@
 ;; sync' after modifying this file!
 
 ;; this gives us fullscreen on startup
+(add-hook 'server-switch-hook #'raise-frame)
 (add-hook 'window-setup-hook #'toggle-frame-fullscreen)
+(add-to-list 'default-frame-alist '(fullscreen . maximized))
 
+(setq projectile-indexing-method 'alien)
+
+(map! :leader
+      :desc "Opens treemacs"
+      "e" #'treemacs)
+;;
+;; accept completion from copilot and fallback to company
+(use-package! copilot
+  :hook (prog-mode . copilot-mode)
+  :bind (("C-TAB" . 'copilot-accept-completion-by-word)
+         ("C-<tab>" . 'copilot-accept-completion-by-word)
+         :map copilot-completion-map
+         ("<tab>" . 'copilot-accept-completion)
+         ("TAB" . 'copilot-accept-completion)))
+
+(map! :leader
+      :desc "toggle copilot"
+        "t" #'copilot-mode)
 
 ;; Some functionality uses this to identify you, e.g. GPG configuration, email
 ;; clients, file templates and snippets. It is optional.
-(setq user-full-name "John Doe"
-      user-mail-address "john@doe.com")
+(setq user-full-name "Alexander Gusev"
+      user-mail-address "goose@soulbound.xyz")
 
 ;; Doom exposes five (optional) variables for controlling fonts in Doom:
 ;;
@@ -26,6 +46,7 @@
 ;;
 (setq doom-font (font-spec :family "DroidSansMono Nerd Font" :size 15 ))
       ;doom-variable-pitch-font (font-spec :family "DroidSansMono Nerd Font" :size 18))
+;;
 ;;
 ;; If you or Emacs can't find your font, use 'M-x describe-font' to look them
 ;; up, `M-x eval-region' to execute elisp code, and 'M-x doom/reload-font' to
@@ -77,3 +98,4 @@
 ;;
 ;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
 ;; they are implemented.
+
