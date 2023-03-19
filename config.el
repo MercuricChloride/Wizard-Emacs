@@ -11,8 +11,12 @@
 (setq projectile-indexing-method 'alien)
 
 (map! :leader
-      :desc "Opens treemacs"
+      :desc "Open treemac"
       "e" #'treemacs)
+
+(map! :leader
+      :desc "Toggle Zen Mode"
+      "z" #'+zen/toggle)
 ;;
 ;; accept completion from copilot and fallback to company
 (use-package! copilot
@@ -44,8 +48,23 @@
 ;; See 'C-h v doom-font' for documentation and more examples of what they
 ;; accept. For example:
 ;;
-(setq doom-font (font-spec :family "DroidSansMono Nerd Font" :size 15 ))
-      ;doom-variable-pitch-font (font-spec :family "DroidSansMono Nerd Font" :size 18))
+(setq doom-font (font-spec :family "Monoid Nerd Font Mono" :size 15 :weight 'semi-light)
+      doom-variable-pitch-font (font-spec :family "Monoid Nerd Font" :size 18)
+      doom-big-font (font-spec :family "Monoid Nerd Font Mono" :size 22)
+      )
+;;
+;; Whenever you reconfigure a package, make sure to wrap your config in an
+;; `after!' block, otherwise Doom's defaults may override your settings. E.g.
+;;
+   (after! doom-themes
+     (setq
+      doom-themes-enable-bold t    ; if nil, bold is universally disabled
+      doom-themes-enable-italic t)) ; if nil, italics is universally disabled
+
+(custom-set-faces!
+  '(font-lock-comment-face :slant italic)
+  ;'(font-lock-keyword-face :slant italic)
+  )
 ;;
 ;;
 ;; If you or Emacs can't find your font, use 'M-x describe-font' to look them
@@ -60,18 +79,15 @@
 
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
-(setq display-line-numbers-type t)
+(setq display-line-numbers-type 'relative)
 
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
 (setq org-directory "~/org/")
+(setq org-journal-dir "~/org/journal/")
+(setq org-journal-file-format "%Y-%m-%d.org")
 
 
-;; Whenever you reconfigure a package, make sure to wrap your config in an
-;; `after!' block, otherwise Doom's defaults may override your settings. E.g.
-;;
-;;   (after! PACKAGE
-;;     (setq x y))
 ;;
 ;; The exceptions to this rule:
 ;;
@@ -99,3 +115,21 @@
 ;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
 ;; they are implemented.
 
+;; (add-hook 'solidity-mode-hook
+;;            (lambda ()
+;;              (setq flycheck-mode nil)))
+;;(setq lsp-completion-provider company)
+
+;; disable flycheck for solidity
+
+;; (setq solidity-solc-path "/opt/homebrew/bin/solc")
+;;
+;(add-to-list 'lsp-language-id-configuration '(solidity-mode . "solidity"))
+(setq flycheck-solidity-solium-soliumrcfile "/Users/goose/.soliumrc.json")
+;(setq flycheck-solidity-solium-soliumrcfile nil)
+(setq solidity-flycheck-use-project t)
+(setq solidity-flycheck-solc-additional-allow-paths '("/Users/goose/buidl_guidl/se-2/packages/hardhat/node_modules/"))
+
+;; this is to prevent a new workspace from being made when emacs daemon is started
+(after! persp-mode
+  (setq persp-emacsclient-init-frame-behaviour-override "main"))
