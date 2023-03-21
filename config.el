@@ -25,7 +25,7 @@
 
 (map! :leader
       :desc "toggle copilot"
-        "t" #'copilot-mode)
+      "t" #'copilot-mode)
 
 ;; Some functionality uses this to identify you, e.g. GPG configuration, email
 ;; clients, file templates and snippets. It is optional.
@@ -44,23 +44,23 @@
 ;; See 'C-h v doom-font' for documentation and more examples of what they
 ;; accept. For example:
 
-;(setq doom-font (font-spec :family "Uncial Antiqua" :size 15)
+                                        ;(setq doom-font (font-spec :family "Uncial Antiqua" :size 15)
 (setq doom-font (font-spec :family "Monoid Nerd Font Mono" :size 15 :weight 'semi-light)
-doom-variable-pitch-font (font-spec :family "Monoid Nerd Font" :size 18)
-doom-big-font (font-spec :family "Monoid Nerd Font Mono" :size 22)
-)
+      doom-variable-pitch-font (font-spec :family "Monoid Nerd Font" :size 18)
+      doom-big-font (font-spec :family "Monoid Nerd Font Mono" :size 22)
+      )
 ;;
 ;; Whenever you reconfigure a package, make sure to wrap your config in an
 ;; `after!' block, otherwise Doom's defaults may override your settings. E.g.
 ;;
-   (after! doom-themes
-     (setq
-      doom-themes-enable-bold t    ; if nil, bold is universally disabled
-      doom-themes-enable-italic t)) ; if nil, italics is universally disabled
+(after! doom-themes
+  (setq
+   doom-themes-enable-bold t    ; if nil, bold is universally disabled
+   doom-themes-enable-italic t)) ; if nil, italics is universally disabled
 
 (custom-set-faces!
   '(font-lock-comment-face :slant italic)
-  ;'(font-lock-keyword-face :slant italic)
+                                        ;'(font-lock-keyword-face :slant italic)
   )
 ;;
 ;;
@@ -113,17 +113,17 @@ doom-big-font (font-spec :family "Monoid Nerd Font Mono" :size 22)
 ;; they are implemented.
 
 (add-hook 'solidity-mode-hook
-           (lambda ()
-             (setq flycheck-mode nil)))
+          (lambda ()
+            (setq flycheck-mode nil)))
 ;;(setq lsp-completion-provider company)
 
 ;; disable flycheck for solidity
 
 ;; (setq solidity-solc-path "/opt/homebrew/bin/solc")
 ;;
-;(add-to-list 'lsp-language-id-configuration '(solidity-mode . "solidity"))
+                                        ;(add-to-list 'lsp-language-id-configuration '(solidity-mode . "solidity"))
 (setq flycheck-solidity-solium-soliumrcfile "/Users/goose/.soliumrc.json")
-;(setq flycheck-solidity-solium-soliumrcfile nil)
+                                        ;(setq flycheck-solidity-solium-soliumrcfile nil)
 (setq solidity-flycheck-use-project t)
 (setq solidity-flycheck-solc-additional-allow-paths '("/Users/goose/buidl_guidl/se-2/packages/hardhat/node_modules/"))
 
@@ -138,10 +138,10 @@ doom-big-font (font-spec :family "Monoid Nerd Font Mono" :size 22)
 
 (map! :leader
       :desc "chatgpt"
-        "cg" #'chatgpt-reply)
+      "cg" #'chatgpt-reply)
 (map! :leader
       :desc "chatgpt"
-        "cp" #'chatgpt-paste)
+      "cp" #'chatgpt-paste)
 
 ;; emms directory
 (setq emms-source-file-default-directory "~/bandcamp/")
@@ -149,19 +149,49 @@ doom-big-font (font-spec :family "Monoid Nerd Font Mono" :size 22)
 ;; emms keybindings
 (map! :leader
       :desc "open emms"
-        "ee" #'emms)
+      "ee" #'emms)
 
 (map! :leader
       :desc "toggle play/pause"
-        "ep" #'emms-pause)
+      "ep" #'emms-pause)
 
 (map! :leader
       :desc "open playlist"
-        "eo" #'emms-play-playlist)
+      "eo" #'emms-play-playlist)
 
 (map! :leader
       :desc "open directory"
-        "ed" #'emms-play-directory)
+      "ed" #'emms-play-directory)
 
-(setq fancy-splash-image "./OrbBanner.png")
+(setq fancy-splash-image "~/.config/doom/OrbBanner.png")
 (setq frame-title-format "Wizard's Lair")
+
+(defun my-play-sound ()
+  (interactive)
+  (emms-play-file "~/.config/doom/Trimmed.mp3"))
+
+(if (daemonp)
+    (add-hook 'after-make-frame-functions
+              (lambda (frame)
+                (select-frame frame)
+                (my-play-sound)))
+  (my-play-sound))
+
+(defun my-org-trigger-function (marker)
+  (when (eq (plist-get marker :type) 'todo-state-change)
+    (let ((todo-state (org-get-todo-state)))
+      (when (string= todo-state "DONE")
+        (progn
+        (emms-stop)
+        (emms-play-file "~/.config/doom/questDone.mp3")))
+      (when (string= todo-state "TODO")
+        (progn
+        (emms-stop)
+        (emms-play-file "~/.config/doom/questStart.mp3"))))))
+
+(add-hook 'org-trigger-hook 'my-org-trigger-function)
+
+;; doom modeline config
+(display-time)
+(setq display-time-default-load-average nil)
+(setq display-time-format "%H:%M")
