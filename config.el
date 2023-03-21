@@ -11,10 +11,6 @@
 (setq projectile-indexing-method 'alien)
 
 (map! :leader
-      :desc "Open treemac"
-      "e" #'treemacs)
-
-(map! :leader
       :desc "Toggle Zen Mode"
       "z" #'+zen/toggle)
 ;;
@@ -47,11 +43,12 @@
 ;;
 ;; See 'C-h v doom-font' for documentation and more examples of what they
 ;; accept. For example:
-;;
+
+;(setq doom-font (font-spec :family "Uncial Antiqua" :size 15)
 (setq doom-font (font-spec :family "Monoid Nerd Font Mono" :size 15 :weight 'semi-light)
-      doom-variable-pitch-font (font-spec :family "Monoid Nerd Font" :size 18)
-      doom-big-font (font-spec :family "Monoid Nerd Font Mono" :size 22)
-      )
+doom-variable-pitch-font (font-spec :family "Monoid Nerd Font" :size 18)
+doom-big-font (font-spec :family "Monoid Nerd Font Mono" :size 22)
+)
 ;;
 ;; Whenever you reconfigure a package, make sure to wrap your config in an
 ;; `after!' block, otherwise Doom's defaults may override your settings. E.g.
@@ -115,9 +112,9 @@
 ;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
 ;; they are implemented.
 
-;; (add-hook 'solidity-mode-hook
-;;            (lambda ()
-;;              (setq flycheck-mode nil)))
+(add-hook 'solidity-mode-hook
+           (lambda ()
+             (setq flycheck-mode nil)))
 ;;(setq lsp-completion-provider company)
 
 ;; disable flycheck for solidity
@@ -133,3 +130,38 @@
 ;; this is to prevent a new workspace from being made when emacs daemon is started
 (after! persp-mode
   (setq persp-emacsclient-init-frame-behaviour-override "main"))
+
+;; chatgpt
+(use-package! chatgpt
+  :config
+  (setq chatgpt-api-key (getenv "OPENAI_API_KEY")))
+
+(map! :leader
+      :desc "chatgpt"
+        "cg" #'chatgpt-reply)
+(map! :leader
+      :desc "chatgpt"
+        "cp" #'chatgpt-paste)
+
+;; emms directory
+(setq emms-source-file-default-directory "~/bandcamp/")
+
+;; emms keybindings
+(map! :leader
+      :desc "open emms"
+        "ee" #'emms)
+
+(map! :leader
+      :desc "toggle play/pause"
+        "ep" #'emms-pause)
+
+(map! :leader
+      :desc "open playlist"
+        "eo" #'emms-play-playlist)
+
+(map! :leader
+      :desc "open directory"
+        "ed" #'emms-play-directory)
+
+(setq fancy-splash-image "./OrbBanner.png")
+(setq frame-title-format "Wizard's Lair")
