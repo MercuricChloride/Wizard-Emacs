@@ -1,16 +1,18 @@
 # WIZARD EMACS
 
+![Epic Wizard](./OrbBanner.png)
+
 ---
 
 ### Shadow Money Wizard Gang, we love casting spells, and love dewm emacks
-
-![Epic Wizard](./OrbBanner.png)
 
 A config setup for wizards using doom emacs.
 
 ## Features of Wizard Emacs
 
 - Epic Wizard Dashboard screen
+
+- Epic Wizard Emacs launch music
 
 - Skyrim quest sound effects for org todo item completion
 

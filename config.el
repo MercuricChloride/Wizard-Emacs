@@ -193,5 +193,4 @@
 
 ;; doom modeline config
 (display-time)
-(setq display-time-default-load-average nil)
 (setq display-time-format "%H:%M")
