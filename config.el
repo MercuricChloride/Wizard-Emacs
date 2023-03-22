@@ -138,10 +138,13 @@
 
 (map! :leader
       :desc "chatgpt"
-      "cg" #'chatgpt-reply)
+      "cgg" #'chatgpt-reply)
 (map! :leader
       :desc "chatgpt"
-      "cp" #'chatgpt-paste)
+      "cgp" #'chatgpt-paste)
+(map! :leader
+      :desc "chatgpt"
+      "cgs" #'chatgpt-skyrimify)
 
 ;; emms directory
 (setq emms-source-file-default-directory "~/bandcamp/")
@@ -194,3 +197,7 @@
 ;; doom modeline config
 (display-time)
 (setq display-time-format "%H:%M")
+
+;; solidity lsp-support
+ (lsp-register-client
+  (make-lsp-client :new-connection (lsp-stdio-connection '("solidity-ls" "--stdio")) :major-modes '(solidity-mode) :priority -1 :server-id 'solc))
