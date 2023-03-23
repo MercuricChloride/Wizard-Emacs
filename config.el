@@ -8,8 +8,6 @@
 (add-hook 'window-setup-hook #'toggle-frame-fullscreen)
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
 
-(setq projectile-indexing-method 'alien)
-
 (map! :leader
       :desc "Toggle Zen Mode"
       "z" #'+zen/toggle)
@@ -44,11 +42,10 @@
 ;; See 'C-h v doom-font' for documentation and more examples of what they
 ;; accept. For example:
 
-                                        ;(setq doom-font (font-spec :family "Uncial Antiqua" :size 15)
+;(setq doom-font (font-spec :family "Uncial Antiqua" :size 15)
 (setq doom-font (font-spec :family "Monoid Nerd Font Mono" :size 15 :weight 'semi-light)
       doom-variable-pitch-font (font-spec :family "Monoid Nerd Font" :size 18)
-      doom-big-font (font-spec :family "Monoid Nerd Font Mono" :size 22)
-      )
+      doom-big-font (font-spec :family "Monoid Nerd Font Mono" :size 22))
 ;;
 ;; Whenever you reconfigure a package, make sure to wrap your config in an
 ;; `after!' block, otherwise Doom's defaults may override your settings. E.g.
@@ -60,7 +57,7 @@
 
 (custom-set-faces!
   '(font-lock-comment-face :slant italic)
-                                        ;'(font-lock-keyword-face :slant italic)
+;'(font-lock-keyword-face :slant italic)
   )
 ;;
 ;;
@@ -77,6 +74,8 @@
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
 (setq display-line-numbers-type 'relative)
+(setq tab-width 2)
+(setq evil-shift-width 2)
 
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
@@ -112,18 +111,12 @@
 ;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
 ;; they are implemented.
 
+(add-hook 'org-mode-hook 'org-auto-tangle-mode)
+
 (add-hook 'solidity-mode-hook
           (lambda ()
             (setq flycheck-mode nil)))
-;;(setq lsp-completion-provider company)
-
-;; disable flycheck for solidity
-
-;; (setq solidity-solc-path "/opt/homebrew/bin/solc")
-;;
-                                        ;(add-to-list 'lsp-language-id-configuration '(solidity-mode . "solidity"))
 (setq flycheck-solidity-solium-soliumrcfile "/Users/goose/.soliumrc.json")
-                                        ;(setq flycheck-solidity-solium-soliumrcfile nil)
 (setq solidity-flycheck-use-project t)
 (setq solidity-flycheck-solc-additional-allow-paths '("/Users/goose/buidl_guidl/se-2/packages/hardhat/node_modules/"))
 
@@ -140,7 +133,8 @@
       :desc "chatgpt"
       "cgg" #'chatgpt-reply)
 (map! :leader
-      :desc "chatgpt"
+      :desc "chat
+gpt"
       "cgp" #'chatgpt-paste)
 (map! :leader
       :desc "chatgpt"
@@ -169,7 +163,7 @@
 (setq fancy-splash-image "~/.config/doom/OrbBanner.png")
 (setq frame-title-format "Wizard's Lair")
 
-(defun my-play-sound ()
+(defun shadow-money-wizard-gang ()
   (interactive)
   (emms-play-file "~/.config/doom/Trimmed.mp3"))
 
@@ -177,10 +171,10 @@
     (add-hook 'after-make-frame-functions
               (lambda (frame)
                 (select-frame frame)
-                (my-play-sound)))
-  (my-play-sound))
+                (shadow-money-wizard-gang)))
+  (shadow-money-wizard-gang))
 
-(defun my-org-trigger-function (marker)
+(defun org-quest-complete (marker)
   (when (eq (plist-get marker :type) 'todo-state-change)
     (let ((todo-state (org-get-todo-state)))
       (when (string= todo-state "DONE")
@@ -192,12 +186,13 @@
         (emms-stop)
         (emms-play-file "~/.config/doom/questStart.mp3"))))))
 
-(add-hook 'org-trigger-hook 'my-org-trigger-function)
+(add-hook 'org-trigger-hook 'org-quest-complete)
 
 ;; doom modeline config
 (display-time)
 (setq display-time-format "%H:%M")
-
+;;
 ;; solidity lsp-support
- (lsp-register-client
-  (make-lsp-client :new-connection (lsp-stdio-connection '("solidity-ls" "--stdio")) :major-modes '(solidity-mode) :priority -1 :server-id 'solc))
+(after! lsp-mode
+  (lsp-register-client
+    (make-lsp-client :new-connection (lsp-stdio-connection '("solc" "--lsp")) :major-modes '(solidity-mode) :priority -1 :server-id 'solc)))

@@ -1,0 +1,261 @@
+#+TITLE: Readme
+#+PROPERTY: header-args :tangle my-tangled-config.el
+#+AUTO_TANGLE: t
+#+AUTHOR: Alexander Gusev
+
+* Config
+
+[[./OrbBanner.png]]
+
+This is my doom emacs config, you will notice that it is an org document. This documentation doesn't mirror my source code, it is my source code! This literate document's code blocks  my actual config whenever I save it.
+
+** Visual Things
+
+
+*** Fullscreen on startup
+This is for when I am not running emacs server
+
+#+begin_src emacs-lisp
+(add-hook 'server-switch-hook #'raise-frame)
+(add-hook 'window-setup-hook #'toggle-frame-fullscreen)
+(add-to-list 'default-frame-alist '(fullscreen . maximized))
+#+end_src
+
+
+*** Remove workspaces on server start
+
+By default when you run emacs --daemon, you create a new workspace, and so when I connect for the first time I have 2 workspaces open at once. This bothered me and so I removed this functionality.
+
+#+begin_src emacs-lisp
+(after! persp-mode
+  (setq persp-emacsclient-init-frame-behaviour-override "main"))
+#+end_src
+
+
+*** Silly little wizard things
+
+My config is pretty stupid. And as such I have a bunch of wizard themed things in my theme.
+
+
+**** Startup Wizard Song
+
+#+begin_src emacs-lisp
+(defun shadow-money-wizard-gang ()
+  (interactive)
+  (emms-play-file "~/.config/doom/Trimmed.mp3"))
+
+(if (daemonp)
+    (add-hook 'after-make-frame-functions
+              (lambda (frame)
+                (select-frame frame)
+                (shadow-money-wizard-gang)))
+  (shadow-money-wizard-gang))
+#+end_src
+
+Execute this codeblock to see
+#+begin_src emacs-lisp
+(shadow-money-wizard-gang)
+#+end_src
+
+
+**** Skyrim quest sound effects for org-todo items
+
+#+begin_src emacs-lisp
+(defun org-quest-complete (marker)
+  (when (eq (plist-get marker :type) 'todo-state-change)
+    (let ((todo-state (org-get-todo-state)))
+      (when (string= todo-state "DONE")
+        (progn
+        (emms-stop)
+        (emms-play-file "~/.config/doom/questDone.mp3")))
+      (when (string= todo-state "TODO")
+        (progn
+        (emms-stop)
+        (emms-play-file "~/.config/doom/questStart.mp3"))))))
+
+(add-hook 'org-trigger-hook 'org-quest-complete)
+#+end_src
+
+Example:
+***** TODO Something
+
+
+**** Wizard Frame
+#+begin_src emacs-lisp
+(setq fancy-splash-image "~/.config/doom/OrbBanner.png")
+(setq frame-title-format "Wizard's Lair")
+#+end_src
+
+
+*** Fonts
+
+This assumes you have:
+- Monoid Nerd Font Mono
+
+#+begin_src emacs-lisp
+(setq doom-font (font-spec :family "Monoid Nerd Font Mono" :size 15 :weight 'semi-light)
+      doom-variable-pitch-font (font-spec :family "Monoid Nerd Font" :size 18)
+      doom-big-font (font-spec :family "Monoid Nerd Font Mono" :size 22))
+#+end_src
+
+
+** EMMS Config
+
+All of my local music is stored in $HOME/bandcamp
+
+#+begin_src emacs-lisp
+
+(setq emms-source-file-default-directory "~/bandcamp/")
+
+(map! :leader
+      :desc "open emms"
+      "ee" #'emms)
+
+(map! :leader
+      :desc "toggle play/pause"
+      "ep" #'emms-pause)
+
+(map! :leader
+
+      :desc "open playlist"
+      "eo" #'emms-play-playlist)
+
+(map! :leader
+      :desc "open directory"
+      "ed" #'emms-play-directory)
+#+end_src
+
+
+** Chat-gpt
+
+I wrote this plugin for myself that adds a bunch of functionality using the chat-gpt api. Funnily much of this functionality is mirrored by github copilot x it would seem.
+
+The plugin requires a environment variable of OPENAI_API_KEY
+
+#+begin_src emacs-lisp
+(package! chatgpt
+  :recipe (:host github :repo "MercuricChloride/chatgpt.el"))
+
+(use-package! chatgpt
+  :config
+  (setq chatgpt-api-key (getenv "OPENAI_API_KEY")))
+
+(map! :leader
+      :desc "chatgpt"
+      "cgg" #'chatgpt-reply)
+(map! :leader
+      :desc "chatgpt"
+      "cgp" #'chatgpt-paste)
+(map! :leader
+      :desc "chatgpt"
+      "cgs" #'chatgpt-skyrimify)
+#+end_src
+
+
+** Modeline
+
+Not a ton of config here, I just added a clock to the default bar
+
+#+begin_src emacs-lisp
+(display-time)
+(setq display-time-format "%H:%M")
+#+end_src
+
+
+** Copilot
+
+Copilot is super useful. Here is my config. Super basic.
+
+#+begin_src emacs-lisp
+(package! copilot
+  :recipe (:host github :repo "zerolfx/copilot.el" :files ("*.el" "dist")))
+
+(use-package! copilot
+  :hook (prog-mode . copilot-mode)
+  :bind (("C-TAB" . 'copilot-accept-completion-by-word)
+         ("C-<tab>" . 'copilot-accept-completion-by-word)
+         :map copilot-completion-map
+         ("<tab>" . 'copilot-accept-completion)
+         ("TAB" . 'copilot-accept-completion)))
+
+(map! :leader
+      :desc "toggle copilot"
+      "t" #'copilot-mode)
+#+end_src
+
+** Text Editing
+
+
+*** Solidity Config
+
+Solidity currently doesn't have the greatest support in emacs. I hope to change this and at least make it a bit better. But for now the current experience isn't wonderful. Here are some things that make it an ok experience for now.
+
+This assumes you have:
+- A soliumrc.json file defined in home
+- solium installed
+- solc installed
+
+#+begin_src emacs-lisp
+(add-hook 'solidity-mode-hook
+          (lambda ()
+            (setq flycheck-mode nil)))
+(setq flycheck-solidity-solium-soliumrcfile "~/.soliumrc.json")
+(setq solidity-flycheck-use-project t)
+(setq solidity-flycheck-solc-additional-allow-paths '("~/buidl_guidl/se-2/packages/hardhat/node_modules/")) ;; this is super hacky and honestly doesn't work yet. But i'm messing with it :)
+#+end_src
+
+
+*** Visual
+
+I am a sane human so I use 2 spaces per tab. I also like relative line numbers.
+
+#+begin_src emacs-lisp
+(setq doom-theme 'doom-one)
+(setq display-line-numbers-type 'relative)
+(setq tab-width 2)
+(setq evil-shift-width 2)
+
+(after! doom-themes
+  (setq
+   doom-themes-enable-bold t    ; if nil, bold is universally disabled
+   doom-themes-enable-italic t)) ; if nil, italics is universally disabled
+
+(custom-set-faces!
+  '(font-lock-comment-face :slant italic))
+#+end_src
+
+
+*** Org Mode
+
+My org mode config is also pretty simple. Just some basic configuration in place. I do use org-auto tangle.
+
+#+begin_src emacs-lisp
+(package! org-auto-tangle
+  :recipe (:host github :repo "yilkalargaw/org-auto-tangle"))
+
+(add-hook 'org-mode-hook 'org-auto-tangle-mode)
+
+(setq org-directory "~/org/")
+(setq org-journal-dir "~/org/journal/")
+(setq org-journal-file-format "%Y-%m-%d.org")
+#+end_src
+
+
+*** Identifiers
+
+I just kinda have this set honestly. Don't use it for much.
+
+#+begin_src emacs-lisp
+(setq user-full-name "Alexander Gusev"
+      user-mail-address "goose@soulbound.xyz")
+#+end_src
+
+*** Zen mode
+
+Chakras so aligned brah
+
+#+begin_src emacs-lisp
+(map! :leader
+      :desc "Toggle Zen Mode"
+      "z" #'+zen/toggle)
+#+end_src

@@ -14,6 +14,12 @@
 (package! chatgpt
   :recipe (:host github :repo "MercuricChloride/chatgpt.el"))
 
+(package! org-auto-tangle
+  :recipe (:host github :repo "yilkalargaw/org-auto-tangle"))
+
+(after! org-auto-tangle
+  (add-hook 'org-mode-hook 'org-auto-tangle-mode))
+
 ;; To install a package directly from a remote git repo, you must specify a
 ;; `:recipe'. You'll find documentation on what `:recipe' accepts here:
 ;; https://github.com/radian-software/straight.el#the-recipe-format
