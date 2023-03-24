@@ -42,7 +42,7 @@
 ;; See 'C-h v doom-font' for documentation and more examples of what they
 ;; accept. For example:
 
-;(setq doom-font (font-spec :family "Uncial Antiqua" :size 15)
+                                        ;(setq doom-font (font-spec :family "Uncial Antiqua" :size 15)
 (setq doom-font (font-spec :family "Monoid Nerd Font Mono" :size 15 :weight 'semi-light)
       doom-variable-pitch-font (font-spec :family "Monoid Nerd Font" :size 18)
       doom-big-font (font-spec :family "Monoid Nerd Font Mono" :size 22))
@@ -57,7 +57,7 @@
 
 (custom-set-faces!
   '(font-lock-comment-face :slant italic)
-;'(font-lock-keyword-face :slant italic)
+                                        ;'(font-lock-keyword-face :slant italic)
   )
 ;;
 ;;
@@ -164,8 +164,7 @@ gpt"
 (setq frame-title-format "Wizard's Lair")
 
 (defun shadow-money-wizard-gang ()
-  (interactive)
-  (emms-play-file "~/.config/doom/Trimmed.mp3"))
+  (play-song "Trimmed.mp3"))
 
 (if (daemonp)
     (add-hook 'after-make-frame-functions
@@ -174,17 +173,20 @@ gpt"
                 (shadow-money-wizard-gang)))
   (shadow-money-wizard-gang))
 
+(defun play-song (song)
+  (async-start
+   (lambda ()
+     (shell-command (concat "mpv ~/.config/doom/" song)))
+  (lambda ()
+     nil)))
+
 (defun org-quest-complete (marker)
   (when (eq (plist-get marker :type) 'todo-state-change)
     (let ((todo-state (org-get-todo-state)))
       (when (string= todo-state "DONE")
-        (progn
-        (emms-stop)
-        (emms-play-file "~/.config/doom/questDone.mp3")))
+        (play-song "questDone.mp3"))
       (when (string= todo-state "TODO")
-        (progn
-        (emms-stop)
-        (emms-play-file "~/.config/doom/questStart.mp3"))))))
+        (play-song "questStart.mp3")))))
 
 (add-hook 'org-trigger-hook 'org-quest-complete)
 
@@ -195,4 +197,4 @@ gpt"
 ;; solidity lsp-support
 (after! lsp-mode
   (lsp-register-client
-    (make-lsp-client :new-connection (lsp-stdio-connection '("solc" "--lsp")) :major-modes '(solidity-mode) :priority -1 :server-id 'solc)))
+   (make-lsp-client :new-connection (lsp-stdio-connection '("solc" "--lsp")) :major-modes '(solidity-mode) :priority -1 :server-id 'solc)))
