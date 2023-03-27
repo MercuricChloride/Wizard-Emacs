@@ -5,9 +5,15 @@
 (after! persp-mode
   (setq persp-emacsclient-init-frame-behaviour-override "main"))
 
+(defun play-song (song)
+  (async-start
+   (lambda ()
+     (shell-command (concat "mpv ~/.config/doom/" song)))
+  (lambda ()
+     nil)))
 (defun shadow-money-wizard-gang ()
   (interactive)
-  (emms-play-file "~/.config/doom/Trimmed.mp3"))
+  (play-song "Trimmed.mp3"))
 
 (if (daemonp)
     (add-hook 'after-make-frame-functions
@@ -22,13 +28,9 @@
   (when (eq (plist-get marker :type) 'todo-state-change)
     (let ((todo-state (org-get-todo-state)))
       (when (string= todo-state "DONE")
-        (progn
-        (emms-stop)
-        (emms-play-file "~/.config/doom/questDone.mp3")))
+        (play-song "questDone.mp3"))
       (when (string= todo-state "TODO")
-        (progn
-        (emms-stop)
-        (emms-play-file "~/.config/doom/questStart.mp3"))))))
+        (play-song "questStart.mp3")))))
 
 (add-hook 'org-trigger-hook 'org-quest-complete)
 

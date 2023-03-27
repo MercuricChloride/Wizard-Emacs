@@ -176,9 +176,7 @@ gpt"
 (defun play-song (song)
   (async-start
    (lambda ()
-     (shell-command (concat "mpv ~/.config/doom/" song)))
-  (lambda ()
-     nil)))
+     (shell-command (concat "mpv ~/.config/doom/" song)))))
 
 (defun org-quest-complete (marker)
   (when (eq (plist-get marker :type) 'todo-state-change)
@@ -193,7 +191,7 @@ gpt"
 ;; doom modeline config
 (display-time)
 (setq display-time-format "%H:%M")
-;;
+
 ;; solidity lsp-support
 (after! lsp-mode
   (lsp-register-client
