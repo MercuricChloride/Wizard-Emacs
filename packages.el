@@ -17,6 +17,9 @@
 (package! org-auto-tangle
   :recipe (:host github :repo "yilkalargaw/org-auto-tangle"))
 
+(package! org-pomodoro
+  :recipe (:host github :repo "marcinkoziej/org-pomodoro"))
+
 (after! org-auto-tangle
   (add-hook 'org-mode-hook 'org-auto-tangle-mode))
 

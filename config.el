@@ -59,6 +59,7 @@
   '(font-lock-comment-face :slant italic)
                                         ;'(font-lock-keyword-face :slant italic)
   )
+(setq doom-modeline-time nil)
 ;;
 ;;
 ;; If you or Emacs can't find your font, use 'M-x describe-font' to look them
@@ -163,20 +164,20 @@ gpt"
 (setq fancy-splash-image "~/.config/doom/OrbBanner.png")
 (setq frame-title-format "Wizard's Lair")
 
-(defun shadow-money-wizard-gang ()
-  (play-song "Trimmed.mp3"))
-
-(if (daemonp)
-    (add-hook 'after-make-frame-functions
-              (lambda (frame)
-                (select-frame frame)
-                (shadow-money-wizard-gang)))
-  (shadow-money-wizard-gang))
-
 (defun play-song (song)
   (async-start
    (lambda ()
      (shell-command (concat "mpv ~/.config/doom/" song)))))
+
+(defun shadow-money-wizard-gang ()
+  (play-song "Trimmed.mp3"))
+
+;; (if (daemonp)
+;;     (add-hook 'after-make-frame-functions
+;;               (lambda (frame)
+;;                 (select-frame frame)
+;;                 (shadow-money-wizard-gang)))
+;;   (shadow-money-wizard-gang))
 
 (defun org-quest-complete (marker)
   (when (eq (plist-get marker :type) 'todo-state-change)
@@ -189,10 +190,45 @@ gpt"
 (add-hook 'org-trigger-hook 'org-quest-complete)
 
 ;; doom modeline config
-(display-time)
-(setq display-time-format "%H:%M")
+(setq display-time-mode nil)
+(setq org-clock-clocked-in-display 'frame-title)
 
 ;; solidity lsp-support
 (after! lsp-mode
   (lsp-register-client
-   (make-lsp-client :new-connection (lsp-stdio-connection '("solc" "--lsp")) :major-modes '(solidity-mode) :priority -1 :server-id 'solc)))
+   (make-lsp-client
+    :new-connection (lsp-stdio-connection '("solidity-ls" "--stdio")) :major-modes '(solidity-mode) :priority -1 :server-id 'solidity-ls)))
+
+;; solidity lsp config
+(add-hook 'solidity-mode-hook (lambda ()
+                                (progn
+                                  (format-all-mode -1)
+                                  (lsp))))
+
+;; rust config
+(after! lsp-mode
+  (progn
+    (setq lsp-rust-analyzer-server-display-inlay-hints t)
+    (setq lsp-rust-analyzer-inlay-hints-mode t))
+    (setq company-minimum-prefix-length 1))
+
+(setq doom-theme 'doom-one)
+(setq display-line-numbers-type 'relative)
+(setq tab-width 2)
+(setq evil-shift-width 2)
+
+;; org journal template
+(setq org-journal-date-format
+      (concat "%A, %x"
+        "
+** TODO Daily Tasks
+*** TODO 4 hours minimum deep work on my work daily
+*** TODO 1 hour minimum deep work on side project daily
+*** TODO Train minimum 30 mins per day for my activity of choice
+*** TODO Read for 15 mins daily
+*** TODO Practice Music 15 mins per day
+*** TODO Do a physical recovery activity each day
+*** TODO No computer before bed
+*** TODO Walk with Ariel
+*** TODO No breaking my allergen diet
+"))
