@@ -130,16 +130,58 @@
   :config
   (setq chatgpt-api-key (getenv "OPENAI_API_KEY")))
 
-(map! :leader
-      :desc "chatgpt"
-      "cgg" #'chatgpt-reply)
-(map! :leader
-      :desc "chat
-gpt"
-      "cgp" #'chatgpt-paste)
-(map! :leader
-      :desc "chatgpt"
-      "cgs" #'chatgpt-skyrimify)
+(map!
+ :leader
+ :desc "chatgpt reply"
+ "cgg" #'chatgpt-reply)
+
+(map!
+ :leader
+ :desc "GPT-4 reply"
+ "cgG" #'chatgpt-reply-gpt-4)
+(map!
+ :leader
+ :desc "chatgpt new reply"
+ "cgn" #'chatgpt-new-reply)
+
+(map!
+ :leader
+ :desc "chatgpt refactor region"
+ "cgr" #'chatgpt-refactor-region)
+
+(map!
+ :leader
+ :desc "GPT-4 refactor region"
+ "cgR" #'chatgpt-refactor-region-gpt-4)
+
+(map!
+ :leader
+ :desc "chatgpt explain region"
+ "cge" #'chatgpt-explain-region)
+
+(map!
+ :leader
+ :desc "GPT-4 explain region"
+ "cgE" #'chatgpt-explain-region-gpt-4)
+
+(map!
+ :leader
+ :desc "chatgpt debug region"
+ "cgd" #'chatgpt-debug-region)
+
+(map!
+ :leader
+ :desc "GPT-4 debug region"
+ "cgD" #'chatgpt-debug-region-gpt-4)
+
+(map!
+ :leader
+ :desc "chatgpt prompt region"
+ "cgp" #'chatgpt-prompt-region)
+(map!
+ :leader
+ :desc "GPT-4 prompt region"
+ "cgP" #'chatgpt-prompt-region-gpt-4)
 
 ;; emms directory
 (setq emms-source-file-default-directory "~/bandcamp/")
@@ -210,7 +252,7 @@ gpt"
   (progn
     (setq lsp-rust-analyzer-server-display-inlay-hints t)
     (setq lsp-rust-analyzer-inlay-hints-mode t))
-    (setq company-minimum-prefix-length 1))
+  (setq company-minimum-prefix-length 1))
 
 (setq doom-theme 'doom-one)
 (setq display-line-numbers-type 'relative)
@@ -220,7 +262,7 @@ gpt"
 ;; org journal template
 (setq org-journal-date-format
       (concat "%A, %x"
-        "
+              "
 ** TODO Daily Tasks
 *** TODO 4 hours minimum deep work on my work daily
 *** TODO 1 hour minimum deep work on side project daily
