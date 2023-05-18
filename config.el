@@ -11,7 +11,7 @@
 (map! :leader
       :desc "Toggle Zen Mode"
       "z" #'+zen/toggle)
-;;
+
 ;; accept completion from copilot and fallback to company
 (use-package! copilot
   :hook (prog-mode . copilot-mode)
@@ -24,6 +24,8 @@
 (map! :leader
       :desc "toggle copilot"
       "t" #'copilot-mode)
+
+(map! "<backtab>" #'copilot-accept-completion)
 
 ;; Some functionality uses this to identify you, e.g. GPG configuration, email
 ;; clients, file templates and snippets. It is optional.
@@ -42,26 +44,23 @@
 ;; See 'C-h v doom-font' for documentation and more examples of what they
 ;; accept. For example:
 
-                                        ;(setq doom-font (font-spec :family "Uncial Antiqua" :size 15)
 (setq doom-font (font-spec :family "Monoid Nerd Font Mono" :size 15 :weight 'semi-light)
       doom-variable-pitch-font (font-spec :family "Monoid Nerd Font" :size 18)
       doom-big-font (font-spec :family "Monoid Nerd Font Mono" :size 22))
-;;
+
 ;; Whenever you reconfigure a package, make sure to wrap your config in an
 ;; `after!' block, otherwise Doom's defaults may override your settings. E.g.
-;;
 (after! doom-themes
   (setq
    doom-themes-enable-bold t    ; if nil, bold is universally disabled
    doom-themes-enable-italic t)) ; if nil, italics is universally disabled
 
 (custom-set-faces!
-  '(font-lock-comment-face :slant italic)
-                                        ;'(font-lock-keyword-face :slant italic)
-  )
+  '(font-lock-comment-face :slant italic))
+
 (setq doom-modeline-time nil)
-;;
-;;
+
+
 ;; If you or Emacs can't find your font, use 'M-x describe-font' to look them
 ;; up, `M-x eval-region' to execute elisp code, and 'M-x doom/reload-font' to
 ;; refresh your font settings. If Emacs still can't find your font, it likely
@@ -117,6 +116,7 @@
 (add-hook 'solidity-mode-hook
           (lambda ()
             (setq flycheck-mode nil)))
+
 (setq flycheck-solidity-solium-soliumrcfile "/Users/goose/.soliumrc.json")
 (setq solidity-flycheck-use-project t)
 (setq solidity-flycheck-solc-additional-allow-paths '("/Users/goose/buidl_guidl/se-2/packages/hardhat/node_modules/"))
@@ -174,10 +174,7 @@
  :desc "GPT-4 debug region"
  "cgD" #'chatgpt-debug-region-gpt-4)
 
-(map!
- :leader
- :desc "chatgpt prompt region"
- "cgp" #'chatgpt-prompt-region)
+
 (map!
  :leader
  :desc "GPT-4 prompt region"
@@ -203,8 +200,9 @@
       :desc "open directory"
       "ed" #'emms-play-directory)
 
-(setq fancy-splash-image "~/.config/doom/OrbBanner.png")
-(setq frame-title-format "Wizard's Lair")
+;; (setq fancy-splash-image "~/.config/doom/OrbBanner.png")
+(setq fancy-splash-image "~/Desktop/smol.png")
+(setq frame-title-format "Milady")
 
 (defun play-song (song)
   (async-start
@@ -214,12 +212,11 @@
 (defun shadow-money-wizard-gang ()
   (play-song "Trimmed.mp3"))
 
-;; (if (daemonp)
-;;     (add-hook 'after-make-frame-functions
-;;               (lambda (frame)
-;;                 (select-frame frame)
-;;                 (shadow-money-wizard-gang)))
-;;   (shadow-money-wizard-gang))
+(if (daemonp)
+    (add-hook 'after-make-frame-functions
+              (lambda (frame)
+                (select-frame frame))))
+;; (shadow-money-wizard-gang))))
 
 (defun org-quest-complete (marker)
   (when (eq (plist-get marker :type) 'todo-state-change)
@@ -249,28 +246,22 @@
 
 ;; rust config
 (after! lsp-mode
-  (progn
+(progn
     (setq lsp-rust-analyzer-server-display-inlay-hints t)
     (setq lsp-rust-analyzer-inlay-hints-mode t))
   (setq company-minimum-prefix-length 1))
 
-(setq doom-theme 'doom-one)
+(setq doom-theme 'modus-vivendi)
 (setq display-line-numbers-type 'relative)
 (setq tab-width 2)
 (setq evil-shift-width 2)
 
-;; org journal template
-(setq org-journal-date-format
-      (concat "%A, %x"
-              "
-** TODO Daily Tasks
-*** TODO 4 hours minimum deep work on my work daily
-*** TODO 1 hour minimum deep work on side project daily
-*** TODO Train minimum 30 mins per day for my activity of choice
-*** TODO Read for 15 mins daily
-*** TODO Practice Music 15 mins per day
-*** TODO Do a physical recovery activity each day
-*** TODO No computer before bed
-*** TODO Walk with Ariel
-*** TODO No breaking my allergen diet
-"))
+;; eslint
+(add-hook 'js-mode-hook
+          (lambda ()
+            (flycheck-mode t)
+            (setq flycheck-javascript-eslint-executable "eslint")
+            (setq flycheck-javascript-eslint-args '("--fix"))))
+
+(setq treemacs-display-current-project-exclusively t)
+(setq which-key-idle-delay 0.1)

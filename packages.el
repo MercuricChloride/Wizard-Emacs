@@ -17,11 +17,22 @@
 (package! org-auto-tangle
   :recipe (:host github :repo "yilkalargaw/org-auto-tangle"))
 
+(after! org-auto-tangle
+  (add-hook 'org-mode-hook 'org-auto-tangle-mode))
+
 (package! org-pomodoro
   :recipe (:host github :repo "marcinkoziej/org-pomodoro"))
 
-(after! org-auto-tangle
-  (add-hook 'org-mode-hook 'org-auto-tangle-mode))
+(package! pest-mode)
+(after! pest-mode
+  (add-to-list 'auto-mode-alist '("\\.pest\\'" . pest-mode)))
+
+(package! protobuf-mode)
+(after! protobuf-mode
+  (add-to-list 'auto-mode-alist '("\\.proto\\'" . protobuf-mode)))
+
+(package! org-notifications)
+
 
 ;; To install a package directly from a remote git repo, you must specify a
 ;; `:recipe'. You'll find documentation on what `:recipe' accepts here:
