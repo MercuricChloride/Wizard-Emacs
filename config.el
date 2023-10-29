@@ -1,18 +1,122 @@
-;;; $DOOMDIR/config.el -*- lexical-binding: t; -*-
-
-;; Place your private configuration here! Remember, you do not need to run 'doom
-;; sync' after modifying this file!
-
-;; this gives us fullscreen on startup
 (add-hook 'server-switch-hook #'raise-frame)
 (add-hook 'window-setup-hook #'toggle-frame-fullscreen)
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
 
-(map! :leader
-      :desc "Toggle Zen Mode"
-      "z" #'+zen/toggle)
+(after! persp-mode
+  (setq persp-emacsclient-init-frame-behaviour-override "main"))
 
-;; accept completion from copilot and fallback to company
+(defun play-song (song)
+  (async-start
+   (lambda ()
+     (shell-command (concat "mpv ~/.config/doom/" song)))))
+
+(defun shadow-money-wizard-gang ()
+  (interactive)
+  (play-song "Trimmed.mp3"))
+
+(defun org-quest-complete (marker)
+  (interactive)
+  (when (eq (plist-get marker :type) 'todo-state-change)
+    (let ((todo-state (org-get-todo-state)))
+      (when (string= todo-state "DONE")
+        (play-song "questDone.mp3"))
+      (when (string= todo-state "TODO")
+        (play-song "questStart.mp3")))))
+
+(add-hook 'org-trigger-hook 'org-quest-complete)
+
+(setq fancy-splash-image "~/.config/doom/OrbBanner.png")
+(setq frame-title-format "Castin spells")
+
+(setq transparent-background-mode t)
+
+(defun custom/transparent-mode ()
+        (interactive)
+        (if    transparent-background-mode
+               (progn
+                (setq transparent-background-mode nil)
+                (set-frame-parameter nil 'alpha-background 100))
+               (progn
+                (setq transparent-background-mode )
+                (set-frame-parameter nil 'alpha-background 70))))
+
+(setq doom-font (font-spec :family "Monoid Nerd Font Mono" :size 15 :weight 'semi-light)
+      doom-variable-pitch-font (font-spec :family "Monoid Nerd Font Mono" :size 18)
+      doom-big-font (font-spec :family "Monoid Nerd Font Mono" :size 22))
+
+(setq emms-source-file-default-directory "~/bandcamp/")
+
+(map! :leader
+      :desc "open emms"
+      "ee" #'emms)
+
+(map! :leader
+      :desc "toggle play/pause"
+      "ep" #'emms-pause)
+
+(map! :leader
+
+      :desc "open playlist"
+      "eo" #'emms-play-playlist)
+
+(map! :leader
+      :desc "open directory"
+      "ed" #'emms-play-directory)
+
+(use-package! chatgpt
+  :defer t
+  :bind ("C-c q" . chatgpt-query))
+
+(setq chatgpt-code-query-map
+      '(
+        ;; ChatGPT.el defaults, string for each shortcut
+        ("bug" . "There is a bug in the following, please help me fix it.")
+        ("doc" . "Please write the documentation for the following.")
+        ("improve" . "Please improve the following.")
+        ("understand" . "What is the following?")
+        ("refactor" . "Please refactor the following.")
+        ("suggest" . "Please make suggestions for the following.")
+        ;; your shortcut
+        ("prompt-name" . "My custom prompt.")))
+;(use-package! chatgpt
+  ;:config
+  ;(setq chatgpt-api-key (getenv "OPENAI_API_KEY")))
+
+;(map! :leader
+      ;:desc "chatgpt"
+      ;"cgg" #'chatgpt-reply)
+;(map! :leader
+      ;:desc "chatgpt"
+      ;"cgp" #'chatgpt-paste)
+;(map! :leader
+      ;:desc "chatgpt"
+      ;"cgs" #'chatgpt-skyrimify)
+
+(display-time)
+(setq display-time-format "%H:%M")
+
+;; unmap the existing undo tree keybindings
+(map!
+      :leader
+      :desc "comment out"
+      "/" #'comment-or-uncomment-region-or-line)
+
+(defun comment-or-uncomment-region-or-line ()
+    "Comments or uncomments the region or the current line if there's no active region."
+    (interactive)
+    (let (beg end)
+        (if (region-active-p)
+            (setq beg (region-beginning) end (region-end))
+             (setq beg (line-beginning-position) end (line-end-position)))
+        (comment-or-uncomment-region beg end)))
+
+(map!
+ :after evil-snipe-mode
+   "," nil)
+(setq doom-localleader-key ",")
+
+(require 'wat-mode)
+
 (use-package! copilot
   :hook (prog-mode . copilot-mode)
   :bind (("C-TAB" . 'copilot-accept-completion-by-word)
@@ -25,31 +129,71 @@
       :desc "toggle copilot"
       "t" #'copilot-mode)
 
+(map! :leader
+      :desc "toggle copilot"
+      "t" #'copilot-mode)
+
 (map! "<backtab>" #'copilot-accept-completion)
 
-;; Some functionality uses this to identify you, e.g. GPG configuration, email
-;; clients, file templates and snippets. It is optional.
-(setq user-full-name "Alexander Gusev"
-      user-mail-address "goose@soulbound.xyz")
+(after! copilot
+  (defun my/copilot-or-evil-ret ()
+    "Accept GitHub Copilot suggestion or execute 'evil-ret' command."
+    (interactive)
+    (if (and copilot-mode (copilot--overlay-visible))
+        (copilot-accept-completion)
+      (evil-ret)))
+  ;; Bind the modified function to the Enter key in Evil mode
+  (define-key evil-normal-state-map (kbd "RET") 'my/copilot-or-evil-ret)
+  (define-key evil-insert-state-map (kbd "RET") 'my/copilot-or-evil-ret)
+  (define-key evil-visual-state-map (kbd "RET") 'my/copilot-or-evil-ret)
+  (setq copilot-node-executable "~/.local/share/nvm/v18.16.0/bin/node"))
 
-;; Doom exposes five (optional) variables for controlling fonts in Doom:
-;;
-;; - `doom-font' -- the primary font to use
-;; - `doom-variable-pitch-font' -- a non-monospace font (where applicable)
-;; - `doom-big-font' -- used for `doom-big-font-mode'; use this for
-;;   presentations or streaming.
-;; - `doom-unicode-font' -- for unicode glyphs
-;; - `doom-serif-font' -- for the `fixed-pitch-serif' face
-;;
-;; See 'C-h v doom-font' for documentation and more examples of what they
-;; accept. For example:
+(setq
+ dashboard-center-content t
+ dashboard-startup-banner "~/.config/doom/OrbBanner.png"
+ doom-fallback-buffer-name "*dashboard*"
+ dashboard-week-agenda t)
 
-(setq doom-font (font-spec :family "Monoid Nerd Font Mono" :size 15 :weight 'semi-light)
-      doom-variable-pitch-font (font-spec :family "Monoid Nerd Font" :size 18)
-      doom-big-font (font-spec :family "Monoid Nerd Font Mono" :size 22))
+(dashboard-open)
 
-;; Whenever you reconfigure a package, make sure to wrap your config in an
-;; `after!' block, otherwise Doom's defaults may override your settings. E.g.
+(global-tree-sitter-mode)
+(setq treesit-extra-load-path nil)
+(setq treesit-language-source-alist '((solidity "https://github.com/JoranHonig/tree-sitter-solidity")))
+
+  (defun nf/treesit-install-all-languages ()
+    "Install all languages specified by `treesit-language-source-alist'."
+    (interactive)
+    (let ((languages (mapcar 'car treesit-language-source-alist)))
+      (dolist (lang languages)
+	      (treesit-install-language-grammar lang)
+	      (message "`%s' parser was installed." lang)
+	      (sit-for 0.75))))
+
+;; solidity lsp-support
+(after! lsp-mode
+  (lsp-register-client
+   (make-lsp-client
+    :new-connection (lsp-stdio-connection '("nomicfoundation-solidity-language-server" "--stdio")) :major-modes '(solidity-mode) :priority -1 :server-id 'solidity-ls)))
+
+;; solidity lsp config
+(add-hook 'solidity-mode-hook (lambda ()
+                                (progn
+                                  (format-all-mode -1)
+                                  (lsp))))
+
+(use-package! lsp-tailwindcss
+  :init (setq lsp-tailwindcss-add-on-mode t))
+
+(dap-auto-configure-mode)
+(require 'dap-lldb)
+(setq dap-lldb-debug-program '("rust-lldb"))
+
+(setq doom-theme 'wheatgrass)
+(setq display-line-numbers-type 'relative)
+(setq tab-width 2)
+(setq evil-shift-width 2)
+(setq web-mode-code-indent-offset 2)
+
 (after! doom-themes
   (setq
    doom-themes-enable-bold t    ; if nil, bold is universally disabled
@@ -58,210 +202,42 @@
 (custom-set-faces!
   '(font-lock-comment-face :slant italic))
 
-(setq doom-modeline-time nil)
 
+(setq treemacs-display-current-project-exclusively t)
+(setq which-key-idle-delay 0.1)
 
-;; If you or Emacs can't find your font, use 'M-x describe-font' to look them
-;; up, `M-x eval-region' to execute elisp code, and 'M-x doom/reload-font' to
-;; refresh your font settings. If Emacs still can't find your font, it likely
-;; wasn't installed correctly. Font issues are rarely Doom issues!
+;(set-popup-rules! '(("^\\*doom\:vterm-popup" :size 0.75 :side bottom :select t :autosave t :modeline t :ttl t :quit nil)))
 
-;; There are two ways to load a theme. Both assume the theme is installed and
-;; available. You can either set `doom-theme' or manually load a theme with the
-;; `load-theme' function. This is the default:
-(setq doom-theme 'doom-one)
+(add-hook 'org-mode-hook 'org-auto-tangle-mode)
 
-;; This determines the style of line numbers in effect. If set to `nil', line
-;; numbers are disabled. For relative line numbers, set this to `relative'.
-(setq display-line-numbers-type 'relative)
-(setq tab-width 2)
-(setq evil-shift-width 2)
-
-;; If you use `org' and don't want your org files in the default location below,
-;; change `org-directory'. It must be set before org loads!
 (setq org-directory "~/org/")
 (setq org-journal-dir "~/org/journal/")
 (setq org-journal-file-format "%Y-%m-%d.org")
 
-
-;;
-;; The exceptions to this rule:
-;;
-;;   - Setting file/directory variables (like `org-directory')
-;;   - Setting variables which explicitly tell you to set them before their
-;;     package is loaded (see 'C-h v VARIABLE' to look up their documentation).
-;;   - Setting doom variables (which start with 'doom-' or '+').
-;;
-;; Here are some additional functions/macros that will help you configure Doom.
-;;
-;; - `load!' for loading external *.el files relative to this one
-;; - `use-package!' for configuring packages
-;; - `after!' for running code after a package has loaded
-;; - `add-load-path!' for adding directories to the `load-path', relative to
-;;   this file. Emacs searches the `load-path' when you load packages with
-;;   `require' or `use-package'.
-;; - `map!' for binding new keys
-;;
-;; To get information about any of these functions/macros, move the cursor over
-;; the highlighted symbol at press 'K' (non-evil users must press 'C-c c k').
-;; This will open documentation for it, including demos of how they are used.
-;; Alternatively, use `C-h o' to look up a symbol (functions, variables, faces,
-;; etc).
-;;
-;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
-;; they are implemented.
-
-(add-hook 'org-mode-hook 'org-auto-tangle-mode)
-
-(add-hook 'solidity-mode-hook
-          (lambda ()
-            (setq flycheck-mode nil)))
-
-(setq flycheck-solidity-solium-soliumrcfile "/Users/goose/.soliumrc.json")
-(setq solidity-flycheck-use-project t)
-(setq solidity-flycheck-solc-additional-allow-paths '("/Users/goose/buidl_guidl/se-2/packages/hardhat/node_modules/"))
-
-;; this is to prevent a new workspace from being made when emacs daemon is started
-(after! persp-mode
-  (setq persp-emacsclient-init-frame-behaviour-override "main"))
-
-;; chatgpt
-(use-package! chatgpt
-  :config
-  (setq chatgpt-api-key (getenv "OPENAI_API_KEY")))
-
 (map!
- :leader
- :desc "chatgpt reply"
- "cgg" #'chatgpt-reply)
+    :mode org-mode
+    :desc "org pomodoro"
+    :localleader
+    "cp" #'org-pomodoro)
 
-(map!
- :leader
- :desc "GPT-4 reply"
- "cgG" #'chatgpt-reply-gpt-4)
-(map!
- :leader
- :desc "chatgpt new reply"
- "cgn" #'chatgpt-new-reply)
+(defun my/org-clip-image ()
+ (interactive)
+ (let* ((default-directory "~/org/images/")
+        (image-file (format-time-string "%Y%m%d%H%M%S.png")))
+     (shell-command (concat "xclip -selection clipboard -t image/png -o > " image-file))
+     (if (= (shell-commmand-to-string (concat "file --mime-type -b " image-file)) "image/png")
+         (progn
+          (insert (concat "[[" default-directory image-file "]]"))
+          (org-display-inline-images))
+         (progn
+          (message "Clipboard does not contain an image")
+          (delete-file image-file)))))
 
-(map!
- :leader
- :desc "chatgpt refactor region"
- "cgr" #'chatgpt-refactor-region)
+(setq org-pretty-entities t)
 
-(map!
- :leader
- :desc "GPT-4 refactor region"
- "cgR" #'chatgpt-refactor-region-gpt-4)
-
-(map!
- :leader
- :desc "chatgpt explain region"
- "cge" #'chatgpt-explain-region)
-
-(map!
- :leader
- :desc "GPT-4 explain region"
- "cgE" #'chatgpt-explain-region-gpt-4)
-
-(map!
- :leader
- :desc "chatgpt debug region"
- "cgd" #'chatgpt-debug-region)
-
-(map!
- :leader
- :desc "GPT-4 debug region"
- "cgD" #'chatgpt-debug-region-gpt-4)
-
-
-(map!
- :leader
- :desc "GPT-4 prompt region"
- "cgP" #'chatgpt-prompt-region-gpt-4)
-
-;; emms directory
-(setq emms-source-file-default-directory "~/bandcamp/")
-
-;; emms keybindings
-(map! :leader
-      :desc "open emms"
-      "ee" #'emms)
+(setq user-full-name "Alexander Gusev"
+      user-mail-address "goose@soulbound.xyz")
 
 (map! :leader
-      :desc "toggle play/pause"
-      "ep" #'emms-pause)
-
-(map! :leader
-      :desc "open playlist"
-      "eo" #'emms-play-playlist)
-
-(map! :leader
-      :desc "open directory"
-      "ed" #'emms-play-directory)
-
-;; (setq fancy-splash-image "~/.config/doom/OrbBanner.png")
-(setq fancy-splash-image "~/Desktop/smol.png")
-(setq frame-title-format "Milady")
-
-(defun play-song (song)
-  (async-start
-   (lambda ()
-     (shell-command (concat "mpv ~/.config/doom/" song)))))
-
-(defun shadow-money-wizard-gang ()
-  (play-song "Trimmed.mp3"))
-
-(if (daemonp)
-    (add-hook 'after-make-frame-functions
-              (lambda (frame)
-                (select-frame frame))))
-;; (shadow-money-wizard-gang))))
-
-(defun org-quest-complete (marker)
-  (when (eq (plist-get marker :type) 'todo-state-change)
-    (let ((todo-state (org-get-todo-state)))
-      (when (string= todo-state "DONE")
-        (play-song "questDone.mp3"))
-      (when (string= todo-state "TODO")
-        (play-song "questStart.mp3")))))
-
-(add-hook 'org-trigger-hook 'org-quest-complete)
-
-;; doom modeline config
-(setq display-time-mode nil)
-(setq org-clock-clocked-in-display 'frame-title)
-
-;; solidity lsp-support
-(after! lsp-mode
-  (lsp-register-client
-   (make-lsp-client
-    :new-connection (lsp-stdio-connection '("solidity-ls" "--stdio")) :major-modes '(solidity-mode) :priority -1 :server-id 'solidity-ls)))
-
-;; solidity lsp config
-(add-hook 'solidity-mode-hook (lambda ()
-                                (progn
-                                  (format-all-mode -1)
-                                  (lsp))))
-
-;; rust config
-(after! lsp-mode
-(progn
-    (setq lsp-rust-analyzer-server-display-inlay-hints t)
-    (setq lsp-rust-analyzer-inlay-hints-mode t))
-  (setq company-minimum-prefix-length 1))
-
-(setq doom-theme 'modus-vivendi)
-(setq display-line-numbers-type 'relative)
-(setq tab-width 2)
-(setq evil-shift-width 2)
-
-;; eslint
-(add-hook 'js-mode-hook
-          (lambda ()
-            (flycheck-mode t)
-            (setq flycheck-javascript-eslint-executable "eslint")
-            (setq flycheck-javascript-eslint-args '("--fix"))))
-
-(setq treemacs-display-current-project-exclusively t)
-(setq which-key-idle-delay 0.1)
+      :desc "Toggle Zen Mode"
+      "z" #'+zen/toggle)

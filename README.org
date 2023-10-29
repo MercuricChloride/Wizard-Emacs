@@ -1,5 +1,5 @@
 #+TITLE: Readme
-#+PROPERTY: header-args :tangle my-tangled-config.el
+#+PROPERTY: header-args :tangle config.el
 #+AUTO_TANGLE: t
 #+AUTHOR: Alexander Gusev
 
@@ -7,7 +7,7 @@
 
 [[./OrbBanner.png]]
 
-This is my doom emacs config, you will notice that it is an org document. This documentation doesn't mirror my source code, it is my source code! This literate document's code blocks  my actual config whenever I save it.
+This is my doom emacs config, you will notice that it is an org document. This documentation doesn't mirror my source code, it is my source code! This literate document's code blocks become my actual config whenever I save it.
 
 ** Visual Things
 
@@ -24,7 +24,7 @@ This is for when I am not running emacs server
 
 *** Remove workspaces on server start
 
-By default when you run emacs --daemon, you create a new workspace, and so when I connect for the first time I have 2 workspaces open at once. This bothered me and so I removed this functionality.
+By default when you run emacs --daemon, it will create a new workspace, and so when I connect for the first time I have 2 workspaces open at once. This bothered me and so I removed this functionality.
 
 #+begin_src emacs-lisp
 (after! persp-mode
@@ -43,31 +43,18 @@ My config is pretty stupid. And as such I have a bunch of wizard themed things i
 (defun play-song (song)
   (async-start
    (lambda ()
-     (shell-command (concat "mpv ~/.config/doom/" song)))
-  (lambda ()
-     nil)))
+     (shell-command (concat "mpv ~/.config/doom/" song)))))
+
 (defun shadow-money-wizard-gang ()
   (interactive)
   (play-song "Trimmed.mp3"))
-
-(if (daemonp)
-    (add-hook 'after-make-frame-functions
-              (lambda (frame)
-                (select-frame frame)
-                (shadow-money-wizard-gang)))
-  (shadow-money-wizard-gang))
 #+end_src
-
-Execute this codeblock to see
-#+begin_src emacs-lisp
-(shadow-money-wizard-gang)
-#+end_src
-
 
 **** Skyrim quest sound effects for org-todo items
 
 #+begin_src emacs-lisp
 (defun org-quest-complete (marker)
+  (interactive)
   (when (eq (plist-get marker :type) 'todo-state-change)
     (let ((todo-state (org-get-todo-state)))
       (when (string= todo-state "DONE")
@@ -85,7 +72,26 @@ Example:
 **** Wizard Frame
 #+begin_src emacs-lisp
 (setq fancy-splash-image "~/.config/doom/OrbBanner.png")
-(setq frame-title-format "Wizard's Lair")
+(setq frame-title-format "Castin spells")
+#+end_src
+
+
+*** Transparent Frames
+
+Sometimes I like to have my frames be transparent, so that's what this does
+
+#+begin_src emacs-lisp
+(setq transparent-background-mode t)
+
+(defun custom/transparent-mode ()
+        (interactive)
+        (if    transparent-background-mode
+               (progn
+                (setq transparent-background-mode nil)
+                (set-frame-parameter nil 'alpha-background 100))
+               (progn
+                (setq transparent-background-mode )
+                (set-frame-parameter nil 'alpha-background 70))))
 #+end_src
 
 
@@ -96,7 +102,7 @@ This assumes you have:
 
 #+begin_src emacs-lisp
 (setq doom-font (font-spec :family "Monoid Nerd Font Mono" :size 15 :weight 'semi-light)
-      doom-variable-pitch-font (font-spec :family "Monoid Nerd Font" :size 18)
+      doom-variable-pitch-font (font-spec :family "Monoid Nerd Font Mono" :size 18)
       doom-big-font (font-spec :family "Monoid Nerd Font Mono" :size 22))
 #+end_src
 
@@ -135,22 +141,34 @@ I wrote this plugin for myself that adds a bunch of functionality using the chat
 The plugin requires a environment variable of OPENAI_API_KEY
 
 #+begin_src emacs-lisp
-(package! chatgpt
-  :recipe (:host github :repo "MercuricChloride/chatgpt.el"))
-
 (use-package! chatgpt
-  :config
-  (setq chatgpt-api-key (getenv "OPENAI_API_KEY")))
+  :defer t
+  :bind ("C-c q" . chatgpt-query))
 
-(map! :leader
-      :desc "chatgpt"
-      "cgg" #'chatgpt-reply)
-(map! :leader
-      :desc "chatgpt"
-      "cgp" #'chatgpt-paste)
-(map! :leader
-      :desc "chatgpt"
-      "cgs" #'chatgpt-skyrimify)
+(setq chatgpt-code-query-map
+      '(
+        ;; ChatGPT.el defaults, string for each shortcut
+        ("bug" . "There is a bug in the following, please help me fix it.")
+        ("doc" . "Please write the documentation for the following.")
+        ("improve" . "Please improve the following.")
+        ("understand" . "What is the following?")
+        ("refactor" . "Please refactor the following.")
+        ("suggest" . "Please make suggestions for the following.")
+        ;; your shortcut
+        ("prompt-name" . "My custom prompt.")))
+;(use-package! chatgpt
+  ;:config
+  ;(setq chatgpt-api-key (getenv "OPENAI_API_KEY")))
+
+;(map! :leader
+      ;:desc "chatgpt"
+      ;"cgg" #'chatgpt-reply)
+;(map! :leader
+      ;:desc "chatgpt"
+      ;"cgp" #'chatgpt-paste)
+;(map! :leader
+      ;:desc "chatgpt"
+      ;"cgs" #'chatgpt-skyrimify)
 #+end_src
 
 
@@ -162,16 +180,49 @@ Not a ton of config here, I just added a clock to the default bar
 (display-time)
 (setq display-time-format "%H:%M")
 #+end_src
+** +Comment out lines
 
+Just a binding to comment out either a line if there is no region selected or a region if selected
+
+#+begin_src emacs-lisp
+;; unmap the existing undo tree keybindings
+(map!
+      :leader
+      :desc "comment out"
+      "/" #'comment-or-uncomment-region-or-line)
+
+(defun comment-or-uncomment-region-or-line ()
+    "Comments or uncomments the region or the current line if there's no active region."
+    (interactive)
+    (let (beg end)
+        (if (region-active-p)
+            (setq beg (region-beginning) end (region-end))
+             (setq beg (line-beginning-position) end (line-end-position)))
+        (comment-or-uncomment-region beg end)))
+#+end_src
+
+** Local Leader Remap
+
+I prefer having my comma be used for local leader rather than SPC-M
+
+#+begin_src emacs-lisp
+(map!
+ :after evil-snipe-mode
+   "," nil)
+(setq doom-localleader-key ",")
+#+end_src
+
+** WAT Mode
+I work with web assembly a lot
+
+#+begin_src emacs-lisp
+(require 'wat-mode)
+#+end_src
 
 ** Copilot
-
 Copilot is super useful. Here is my config. Super basic.
 
 #+begin_src emacs-lisp
-(package! copilot
-  :recipe (:host github :repo "zerolfx/copilot.el" :files ("*.el" "dist")))
-
 (use-package! copilot
   :hook (prog-mode . copilot-mode)
   :bind (("C-TAB" . 'copilot-accept-completion-by-word)
@@ -183,28 +234,132 @@ Copilot is super useful. Here is my config. Super basic.
 (map! :leader
       :desc "toggle copilot"
       "t" #'copilot-mode)
+
+(map! :leader
+      :desc "toggle copilot"
+      "t" #'copilot-mode)
+
+(map! "<backtab>" #'copilot-accept-completion)
+
+(after! copilot
+  (defun my/copilot-or-evil-ret ()
+    "Accept GitHub Copilot suggestion or execute 'evil-ret' command."
+    (interactive)
+    (if (and copilot-mode (copilot--overlay-visible))
+        (copilot-accept-completion)
+      (evil-ret)))
+  ;; Bind the modified function to the Enter key in Evil mode
+  (define-key evil-normal-state-map (kbd "RET") 'my/copilot-or-evil-ret)
+  (define-key evil-insert-state-map (kbd "RET") 'my/copilot-or-evil-ret)
+  (define-key evil-visual-state-map (kbd "RET") 'my/copilot-or-evil-ret)
+  (setq copilot-node-executable "~/.local/share/nvm/v18.16.0/bin/node"))
 #+end_src
 
+
+** Dashboard
+#+begin_src emacs-lisp
+(setq
+ dashboard-center-content t
+ dashboard-startup-banner "~/.config/doom/OrbBanner.png"
+ doom-fallback-buffer-name "*dashboard*"
+ dashboard-week-agenda t)
+
+(dashboard-open)
+#+end_src
+
+#+RESULTS:
+: #<buffer *dashboard*>
+
+
 ** Text Editing
+*** Tree Sitter
+
+I want to use tree-sitter for some stuff, here is my config.
+
+#+begin_src emacs-lisp
+(global-tree-sitter-mode)
+(setq treesit-extra-load-path nil)
+(setq treesit-language-source-alist '((solidity "https://github.com/JoranHonig/tree-sitter-solidity")))
+
+  (defun nf/treesit-install-all-languages ()
+    "Install all languages specified by `treesit-language-source-alist'."
+    (interactive)
+    (let ((languages (mapcar 'car treesit-language-source-alist)))
+      (dolist (lang languages)
+	      (treesit-install-language-grammar lang)
+	      (message "`%s' parser was installed." lang)
+	      (sit-for 0.75))))
+#+end_src
 
 
-*** Solidity Config
+*** LSP
+
+**** General
+#+begin_src emacs-lisp :tangle yes
+(setq lsp-lens-enable nil)
+(setq +format-with-lsp nil)
+#+end_src
+
+**** Solidity Config
 
 Solidity currently doesn't have the greatest support in emacs. I hope to change this and at least make it a bit better. But for now the current experience isn't wonderful. Here are some things that make it an ok experience for now.
 
-This assumes you have:
-- A soliumrc.json file defined in home
-- solium installed
-- solc installed
+YOU ALSO HAVE TO INSTALL THE NOMIC-LABS-SOLIDITY-LANGUAGE-SERVER
+[[https://github.com/NomicFoundation/hardhat-vscode/tree/development/server]]
 
 #+begin_src emacs-lisp
-(add-hook 'solidity-mode-hook
-          (lambda ()
-            (setq flycheck-mode nil)))
-(setq flycheck-solidity-solium-soliumrcfile "~/.soliumrc.json")
-(setq solidity-flycheck-use-project t)
-(setq solidity-flycheck-solc-additional-allow-paths '("~/buidl_guidl/se-2/packages/hardhat/node_modules/")) ;; this is super hacky and honestly doesn't work yet. But i'm messing with it :)
+;; solidity lsp-support
+(after! lsp-mode
+  (lsp-register-client
+   (make-lsp-client
+    :new-connection (lsp-stdio-connection '("nomicfoundation-solidity-language-server" "--stdio")) :major-modes '(solidity-mode) :priority -1 :server-id 'solidity-ls)))
+
+;; solidity lsp config
+(add-hook 'solidity-mode-hook (lambda ()
+                                (progn
+                                  (format-all-mode -1)
+                                  (lsp))))
 #+end_src
+
+**** Tailwind
+
+#+begin_src emacs-lisp
+(use-package! lsp-tailwindcss
+  :init (setq lsp-tailwindcss-add-on-mode t))
+#+end_src
+
+**** Rust config
+
+#+begin_src emacs-lisp :tangle yes
+;; rust config
+(after! lsp-mode
+  (progn
+    (setq lsp-rust-analyzer-server-display-inlay-hints t)
+    (setq lsp-rust-analyzer-inlay-hints-mode t))
+  (setq company-minimum-prefix-length 1))
+
+(after! rustic-mode
+  (setq rustic-rustfmt-args "--edition 2021" rustic-format-on-save t))
+#+end_src
+
+**** Javascript
+#+begin_src emacs-lisp :tangle yes
+(add-hook 'js-mode-hook
+          (lambda ()
+            (flycheck-mode t)
+            (setq flycheck-javascript-eslint-executable "eslint")
+            (setq flycheck-javascript-eslint-args '("--fix"))))
+#+end_src
+*** DAP Mode
+
+I am playing around with debuggers, mainly for rust. I don't use this very much yet but here is my config:
+
+#+begin_src emacs-lisp
+(dap-auto-configure-mode)
+(require 'dap-lldb)
+(setq dap-lldb-debug-program '("rust-lldb"))
+#+end_src
+
 
 
 *** Visual
@@ -212,10 +367,11 @@ This assumes you have:
 I am a sane human so I use 2 spaces per tab. I also like relative line numbers.
 
 #+begin_src emacs-lisp
-(setq doom-theme 'doom-one)
+(setq doom-theme 'wheatgrass)
 (setq display-line-numbers-type 'relative)
 (setq tab-width 2)
 (setq evil-shift-width 2)
+(setq web-mode-code-indent-offset 2)
 
 (after! doom-themes
   (setq
@@ -224,6 +380,16 @@ I am a sane human so I use 2 spaces per tab. I also like relative line numbers.
 
 (custom-set-faces!
   '(font-lock-comment-face :slant italic))
+
+
+(setq treemacs-display-current-project-exclusively t)
+(setq which-key-idle-delay 0.1)
+#+end_src
+
+I also like my terminal popup to be a bit larger so that's what this config is for.
+
+#+begin_src emacs-lisp
+;(set-popup-rules! '(("^\\*doom\:vterm-popup" :size 0.75 :side bottom :select t :autosave t :modeline t :ttl t :quit nil)))
 #+end_src
 
 
@@ -232,14 +398,122 @@ I am a sane human so I use 2 spaces per tab. I also like relative line numbers.
 My org mode config is also pretty simple. Just some basic configuration in place. I do use org-auto tangle.
 
 #+begin_src emacs-lisp
-(package! org-auto-tangle
-  :recipe (:host github :repo "yilkalargaw/org-auto-tangle"))
-
 (add-hook 'org-mode-hook 'org-auto-tangle-mode)
 
 (setq org-directory "~/org/")
 (setq org-journal-dir "~/org/journal/")
 (setq org-journal-file-format "%Y-%m-%d.org")
+#+end_src
+
+
+**** Org reveal
+#+begin_src emacs-lisp :tangle yes
+(setq org-reveal-root "file:///~/reveal_js/js/reveal.js")
+#+end_src
+
+**** Literate Programming Config
+#+begin_src emacs-lisp :tangle yes
+;; add a org on save hook that calls org-babel-tangle
+(add-hook 'after-save-hook
+          (lambda ()
+            (when (eq major-mode 'org-mode)
+              (org-babel-tangle))))
+
+;; this makes it so that org src blocks are opened to the right of the current window
+;; the reason it says "current-window" is because the pop-rules are applied to the "Org Src" buffer
+(after! org
+  (setq org-src-window-setup 'current-window)
+  (set-popup-rules! '(("^\\*Org Src" :size 0.5 :side right :quit nil :select t :autosave t :modeline t :ttl nil))))
+
+;; this function is called before popping up a new window to edit a src file in
+(defun org-babel-edit-prep:rust (babel-info)
+  (setq-local buffer-file-name (->> babel-info caddr (alist-get :tangle)))
+  (lsp))
+
+(defun my-org-src-mode-setup ()
+  "Setup LSP for org-src buffers."
+  (when (and (buffer-file-name) lsp-mode)
+    (lsp-deferred)))
+
+(add-hook 'org-src-mode-hook #'my-org-src-mode-setup)
+
+(defun org-heading-path ()
+  (interactive)
+  (let ((path (org-get-outline-path t)))
+    (message (mapconcat 'identity (flatten-list path) "/"))))
+
+(defun edit-tangled-block ()
+  (interactive)
+  (let* ((element (org-element-at-point))
+         (lang (org-element-property :language element))
+         (name (org-element-property :name element))
+         (tangle (org-element-property :tangle element)))
+    (message tangle)))
+
+(defun insert-org-unique-name ()
+  (interactive)
+  (let ((name (org-heading-path)))
+    (insert (concat "#+NAME: " name "\n"))))
+
+(map!
+ :mode org-mode
+ :desc "insert org unique name"
+ "C-c i" #'insert-org-unique-name)
+
+(defun my-detangle ()
+  (interactive)
+  (let ((cursor-pos (point)))
+    (org-babel-detangle)
+    (previous-buffer)
+    (goto-char cursor-pos)))
+
+(map!
+  :mode org-mode
+  :desc "tangle"
+  :localleader
+  "t" #'org-babel-tangle)
+
+(map!
+  :mode rustic-mode
+  :desc "detangle"
+  :localleader
+  "t" #'my-detangle)
+#+end_src
+
+**** Org Pomodoro
+
+The org pomodoro plugin doesn't have a keybinding by default. So I am adding one.
+
+#+begin_src emacs-lisp
+(map!
+    :mode org-mode
+    :desc "org pomodoro"
+    :localleader
+    "cp" #'org-pomodoro)
+#+end_src
+**** Copy from clipboard for images
+
+I need the ability to copy an image from my clipboard and use it within org mode. These functions allow this.
+
+#+begin_src emacs-lisp
+(defun my/org-clip-image ()
+ (interactive)
+ (let* ((default-directory "~/org/images/")
+        (image-file (format-time-string "%Y%m%d%H%M%S.png")))
+     (shell-command (concat "xclip -selection clipboard -t image/png -o > " image-file))
+     (if (= (shell-commmand-to-string (concat "file --mime-type -b " image-file)) "image/png")
+         (progn
+          (insert (concat "[[" default-directory image-file "]]"))
+          (org-display-inline-images))
+         (progn
+          (message "Clipboard does not contain an image")
+          (delete-file image-file)))))
+#+end_src
+
+**** Pretty characters
+
+#+begin_src emacs-lisp
+(setq org-pretty-entities t)
 #+end_src
 
 
@@ -251,6 +525,7 @@ I just kinda have this set honestly. Don't use it for much.
 (setq user-full-name "Alexander Gusev"
       user-mail-address "goose@soulbound.xyz")
 #+end_src
+
 
 *** Zen mode
 
